@@ -1,0 +1,2 @@
+exclude = '{*.hi,*.o,*.dyn_hi,*.dyn_o}'
+excludeDirectories = '{dist,}'

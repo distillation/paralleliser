@@ -1,0 +1,4 @@
+language-core
+=======
+
+A Haskell language parsers which parses to a somewhat reduced set of Haskell-98.
