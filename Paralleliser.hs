@@ -52,7 +52,7 @@ parallelize (Let x e e') p
 parallelize (TupleLet xs e e') p = TupleLet xs e e'
 
 parallelizeBranch :: Branch -> [Int] -> Branch   
-parallelizeBranch (Branch "Node" args@(x:x':x'':[]) e) p = Branch "Node" args (parallelize e (nub (1:2:map (+3) p)))
+parallelizeBranch (Branch "Join" args@(x:x':x'':[]) e) p = Branch "Join" args (parallelize e (nub (0:1:map (+2) p)))
 parallelizeBranch (Branch c args e) p = Branch c args (parallelize e (map (+ (length args)) p))
 
 parallelizeFunction :: Function -> Function
