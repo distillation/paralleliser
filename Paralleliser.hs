@@ -72,3 +72,26 @@ parallelizeFile file = do
     Program t c m p w e i <- parseFile file
     let Program t' c' m' p' w' e' i' = parallelizeProgram (Program t (c ++ generateFlattenedDataTypes c) m p w e i)
     return (Program (Where t' (generatePartitioningFunctions c ++ generateRebuildingFunctions c)) c' m' (monomorphismPragma:p')  w' e' i')
+    
+bound :: Term -> [BoundVar]
+bound = bound' 0 []
+
+{-|
+    Given a 'Term', returns the set of 'BoundVar's within that 'Term' combined with a supplied set of 'BoundVar's.
+-}
+
+bound' :: Int -> [BoundVar] -> Term -> [BoundVar]
+bound' _ bs (Free _) = bs
+bound' d bs (Bound i)
+ | b < 0 || b `elem` bs = bs
+ | otherwise = b:bs
+ where b = i - d
+bound' d bs (Lambda _ t) = bound' (d + 1) bs t
+bound' d bs (Con _ ts) = foldr (flip (bound' d)) bs ts
+bound' d bs (Apply t u) = bound' d (bound' d bs u) t
+bound' _ bs (Fun _) = bs
+bound' d bs (Case t bs') = foldr (\(Branch _ xs t') bs'' -> bound' (d + length xs) bs'' t') (bound' d bs t) bs'
+bound' d bs (Let _ t u) = bound' (d + 1) (bound' d bs t) u
+bound' d bs (Where t ds) = bound' d (foldr (\(_, t') bs' -> bound' d bs' t') bs ds) t
+bound' d bs (Tuple es) = foldr (\e bs' -> bound' d bs' e) bs es
+bound' d bs (TupleLet xs t u) = bound' (d + length xs) (bound' d bs t) u
